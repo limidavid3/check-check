@@ -353,6 +353,31 @@
   @media (orientation: landscape) {
     .photo-panel { width: 80%; }
   }
+
+  /* ── SAVE PROMPT ── */
+  #savePrompt {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300;
+    display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+    padding: 20px;
+  }
+  .save-prompt-img {
+    max-width: 90vw; max-height: 55vh; object-fit: contain;
+    border-radius: 10px; border: 2px solid var(--accent2);
+  }
+  .save-prompt-title { font-size: 16px; font-weight: 700; color: #fff; text-align: center; }
+  .save-prompt-hint {
+    font-size: 13px; color: rgba(255,255,255,0.6); text-align: center; line-height: 1.6;
+    background: rgba(255,255,255,0.07); padding: 10px 16px; border-radius: 10px;
+  }
+  .save-prompt-filename {
+    font-size: 13px; color: var(--accent2); font-weight: 700;
+    background: rgba(31,111,235,0.15); padding: 6px 14px; border-radius: 20px;
+  }
+  .save-prompt-close {
+    padding: 11px 32px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 24px; color: var(--text2); font-size: 14px; font-weight: 600;
+    cursor: pointer; margin-top: 4px;
+  }
 </style>
 </head>
 <body>
@@ -444,8 +469,7 @@
 
       <!-- Capture row -->
       <div class="capture-row">
-        <input type="file" id="captureInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCapture(event)">
-        <button class="btn-capture" id="captureBtn" onclick="document.getElementById('captureInput').click()">
+        <button class="btn-capture" id="captureBtn" onclick="launchShortcut()">
           📷 拍照記錄
         </button>
         <img class="thumb-preview" id="thumbPreview" />
@@ -924,44 +948,26 @@ function goBack(from) {
 }
 
 // ─── PHOTO CAPTURE ────────────────────────────────────────────────────────
-function handleCapture(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const item = currentItems[currentIndex];
+// 捷徑連結：傳入檔名後跳到捷徑 App 拍照並自動改名存相簿
+const SHORTCUT_URL = 'https://www.icloud.com/shortcuts/78aee137f7414201aa8454b5f0b95e98';
 
-  // 取得原本照片的 basename 作為檔名
+function launchShortcut() {
+  const item = currentItems[currentIndex];
   const basename = item.photo
     ? item.photo.replace(/\.(jpe?g|png|gif|webp)$/i, '')
     : `photo_${item.id}`;
 
-  // 判斷副檔名（保留原始拍照格式）
-  const ext = file.type === 'image/png' ? '.png' : '.jpg';
-  const filename = basename + ext;
+  // 標記已拍照
+  item.photo_taken = true;
+  document.getElementById('captureBtn').textContent = '✅ 已拍照';
+  document.getElementById('captureBtn').className = 'btn-capture has-photo';
+  document.getElementById('thumbPreview').style.display = 'none';
 
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const dataURL = ev.target.result;
-
-    // 更新畫面縮圖
-    currentItems[currentIndex].photo_taken = dataURL;
-    document.getElementById('captureBtn').textContent = '✅ 已拍照';
-    document.getElementById('captureBtn').className = 'btn-capture has-photo';
-    const thumb = document.getElementById('thumbPreview');
-    thumb.src = dataURL;
-    thumb.style.display = 'block';
-
-    // 自動下載到手機，檔名 = 原本照片名稱
-    const a = document.createElement('a');
-    a.href = dataURL;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    showToast(`已下載：${filename}`);
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
+  // 跳到捷徑 App，帶入檔名作為參數
+  // 捷徑 URL scheme: shortcuts://run-shortcut?name=拍照改名&input=檔名
+  const shortcutName = encodeURIComponent('拍照改名');
+  const input = encodeURIComponent(basename);
+  window.location.href = `shortcuts://run-shortcut?name=${shortcutName}&input=${input}`;
 }
 
 // ─── LIGHTBOX ─────────────────────────────────────────────────────────────
@@ -1195,6 +1201,29 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
+
+// ─── SAVE PROMPT ──────────────────────────────────────────────────────────
+function showSavePrompt(dataURL, filename) {
+  document.getElementById('saveImg').src = dataURL;
+  document.getElementById('saveFilename').textContent = filename;
+  document.getElementById('savePrompt').style.display = 'flex';
+}
+function closeSavePrompt() {
+  document.getElementById('savePrompt').style.display = 'none';
+  showToast('✅ 已拍照記錄');
+}
 </script>
+
+<!-- ══ SAVE PROMPT ══ -->
+<div id="savePrompt">
+  <div class="save-prompt-filename" id="saveFilename"></div>
+  <div class="save-prompt-title">長按下方照片 → 儲存到相片</div>
+  <img class="save-prompt-img" id="saveImg" src="" alt="">
+  <div class="save-prompt-hint">
+    長按照片 → 選「加入照片」或「儲存影像」<br>
+    儲存完成後按下方按鈕關閉
+  </div>
+  <button class="save-prompt-close" onclick="closeSavePrompt()">儲存完成，關閉</button>
+</div>
 </body>
 </html>
