@@ -164,13 +164,12 @@
   /* Main content: landscape layout */
   .det-body {
     flex: 1; display: flex; min-height: 0;
-    /* landscape: side by side */
   }
 
-  /* Photo panel (left in landscape) */
+  /* Photo panel — 佔大部分空間 */
   .photo-panel {
     position: relative; flex-shrink: 0;
-    width: 55%; display: flex; flex-direction: column;
+    width: 80%; display: flex; flex-direction: column;
     background: #000; border-right: 1px solid var(--border);
   }
   .photo-label {
@@ -186,30 +185,30 @@
   }
   .prev-photo img { width: 100%; height: 100%; object-fit: contain; }
 
-  /* Info panel (right) */
+  /* Info panel (right) — 精簡小字 */
   .info-panel {
     flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
   }
 
-  .info-scroll { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .info-scroll { flex: 1; overflow-y: auto; padding: 6px 7px; display: flex; flex-direction: column; gap: 3px; }
 
-  .info-row { display: flex; gap: 6px; align-items: flex-start; }
+  .info-row { display: flex; gap: 3px; align-items: flex-start; }
   .info-tag {
-    font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;
-    letter-spacing: 0.5px; padding-top: 2px; flex-shrink: 0; width: 52px;
+    font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase;
+    letter-spacing: 0.3px; padding-top: 1px; flex-shrink: 0; width: 32px;
   }
-  .info-val { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.4; word-break: break-all; }
-  .info-val.big { font-size: 15px; font-weight: 700; color: var(--text); }
+  .info-val { font-size: 10px; color: var(--text2); font-weight: 500; line-height: 1.4; word-break: break-all; }
+  .info-val.big { font-size: 11px; font-weight: 700; color: var(--text); }
 
   .divider { height: 1px; background: var(--border); margin: 2px 0; }
 
   /* Remark section */
-  .remark-label { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .remark-label { font-size: 9px; font-weight: 700; color: var(--text2); letter-spacing: 0.3px; margin-bottom: 2px; }
   .remark-area {
-    width: 100%; min-height: 60px; background: var(--surface2);
+    width: 100%; min-height: 44px; background: var(--surface2);
     border: 1px solid var(--border); border-radius: var(--radius);
-    color: var(--text); font-size: 13px; padding: 8px; resize: none;
-    font-family: inherit; line-height: 1.5;
+    color: var(--text); font-size: 11px; padding: 5px 6px; resize: none;
+    font-family: inherit; line-height: 1.4;
     transition: border-color 0.15s;
     -webkit-appearance: none;
   }
@@ -217,19 +216,19 @@
 
   /* Photo capture */
   .capture-row {
-    display: flex; gap: 6px; align-items: center; flex-shrink: 0;
-    padding: 8px 12px; background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+    padding: 5px 7px; background: var(--surface); border-top: 1px solid var(--border);
   }
   .btn-capture {
-    flex: 1; padding: 9px; border-radius: var(--radius);
+    flex: 1; padding: 7px 5px; border-radius: var(--radius);
     background: var(--surface2); border: 1.5px dashed var(--border);
-    color: var(--text2); font-size: 12px; cursor: pointer; text-align: center;
+    color: var(--text2); font-size: 10px; cursor: pointer; text-align: center;
     transition: background 0.15s, border-color 0.15s;
   }
   .btn-capture:active { background: var(--surface3); }
   .btn-capture.has-photo { border-style: solid; border-color: var(--success); color: var(--success); }
   .thumb-preview {
-    width: 44px; height: 44px; border-radius: 6px; object-fit: cover;
+    width: 34px; height: 34px; border-radius: 5px; object-fit: cover;
     border: 1.5px solid var(--success); display: none;
   }
 
@@ -352,7 +351,7 @@
     .det-body { flex-direction: column; }
   }
   @media (orientation: landscape) {
-    .photo-panel { width: 52%; }
+    .photo-panel { width: 80%; }
   }
 </style>
 </head>
@@ -539,87 +538,176 @@ const CATEGORIES = {
   7: { name: '越域排洪道', icon: '🚰' }
 };
 
-// ── 資料來源：阿公店現場檢查系統-5月用.xlsx ──
-// 每個月更新 Excel 後重新上傳給 Claude 即可自動更新此處資料
-// 照片副檔名預設 .jpg，如需更改請修改下方 getPhotoSrc() 函式
+// ── 資料來源：阿公店現場檢查系統-5月用.xlsx（共161筆）──
 let anomalies = [
-  // ── 1. 上游（共 70 筆）──
-  {id:1,cat:1,name:'右副壩起點現況',photo:'URST.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:2,cat:1,name:'0k+050混凝土牆銜接上游坡面局部破壞',photo:'U0K050.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:3,cat:1,name:'0K+057坡面鼠洞',photo:'U0K057.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:4,cat:1,name:'0K+065坡面鼠洞',photo:'U0K065.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:5,cat:1,name:'0k+075混凝土胸牆局部破損',photo:'U0K075.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:6,cat:1,name:'0K+080坡面鼠洞',photo:'U0K080B.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:7,cat:1,name:'0K+080坡面鼠洞',photo:'U0K090.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:8,cat:1,name:'0K+080坡面鼠洞',photo:'U0K106.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:9,cat:1,name:'0k+110混凝土擋土牆局部破壞45x60x15',photo:'U0K110.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:10,cat:1,name:'0k+127混凝土牆局部破壞',photo:'U0K127.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:11,cat:1,name:'0K+128坡面鼠洞',photo:'U0K128.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:12,cat:1,name:'0k+137混凝土牆局部破壞',photo:'U0K137.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:13,cat:1,name:'0k+145混凝土牆局部破壞',photo:'U0K145.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:14,cat:1,name:'0k+150鼠洞60 x40 x5',photo:'U0K150.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:15,cat:1,name:'0K+180坡面鼠洞',photo:'U0K180B.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:16,cat:1,name:'0k+192混凝土牆開裂',photo:'U0K192.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:17,cat:1,name:'0k+207混凝土牆開裂',photo:'U0K207.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:18,cat:1,name:'0k+208鼠洞25x20x20',photo:'U0K208.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:19,cat:1,name:'0k+240鼠洞',photo:'U0K240.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:20,cat:1,name:'連絡橋左側現況',photo:'UBL1.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:21,cat:1,name:'連絡橋左側現況',photo:'UBL2.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:22,cat:1,name:'聯絡橋下方塌陷',photo:'UBD.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:23,cat:1,name:'0k+305截水溝旁孔洞',photo:'U0K305.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:24,cat:1,name:'0k+305截水溝旁孔洞',photo:'U0K306.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:25,cat:1,name:'0k+329混凝土胸牆局部破損',photo:'U0K329.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:26,cat:1,name:'0k+340鼠洞x1',photo:'U0K340.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:27,cat:1,name:'0k+380混凝土胸牆局部破損',photo:'U0K380.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:28,cat:1,name:'0k+420鼠洞x1',photo:'U0K420.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:29,cat:1,name:'0k+487混凝土胸牆局部破損',photo:'U0K487.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:30,cat:1,name:'0k+500溢洪管喇叭口現況',photo:'U0K500.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:31,cat:1,name:'0k+510孔洞',photo:'U0K510.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:32,cat:1,name:'0k+572孔洞30x20x20',photo:'U0K572.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:33,cat:1,name:'0k+582坡面局部沖刷100x40x25',photo:'U0K582.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:34,cat:1,name:'0k+612坡面局部沖刷80x50x20',photo:'U0K612.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:35,cat:1,name:'0k+624混凝土牆局部破損',photo:'U0K624.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:36,cat:1,name:'0k+630混凝土牆局部破損',photo:'U0K630.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:37,cat:1,name:'0k+715孔洞30x20x20',photo:'U0K715.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:38,cat:1,name:'0k+730混凝土牆局部破損',photo:'U0K730.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:39,cat:1,name:'0K+765孔洞',photo:'U0K765.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:40,cat:1,name:'0K+790孔洞',photo:'U0K790.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:41,cat:1,name:'0K+820上游側冒泡',photo:'U0K820.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:42,cat:1,name:'0K+850上游側冒泡',photo:'U0K850.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:43,cat:1,name:'0K+879孔洞',photo:'U0K879.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:44,cat:1,name:'0K+915上游側冒泡',photo:'U0K900A.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:45,cat:1,name:'0k+930鼠洞X1',photo:'U0K930.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:46,cat:1,name:'0k+942沖蝕坑X1',photo:'U0K942.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:47,cat:1,name:'0k+950沖蝕坑X1',photo:'U0K950.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:48,cat:1,name:'0k+975混凝土牆局部破損',photo:'U0K975.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:49,cat:1,name:'太陽能墩塊現況',photo:'USB1.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:50,cat:1,name:'太陽能墩塊現況',photo:'USB2.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:51,cat:1,name:'1k+015混凝土牆局部破損',photo:'U1K015.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:52,cat:1,name:'1K+095孔洞',photo:'U1K095.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:53,cat:1,name:'1K+100孔洞',photo:'U1K100.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:54,cat:1,name:'1k+167.5沖蝕孔',photo:'U1K167.5.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:55,cat:1,name:'1K+397坡面孔洞',photo:'U1K397.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:56,cat:1,name:'1k+420坡面孔洞35x18x60',photo:'U1K440.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:57,cat:1,name:'1K+450孔洞',photo:'U1K450.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:58,cat:1,name:'1k+470坡面孔洞',photo:'U1K470.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:59,cat:1,name:'1K+485坡面孔洞',photo:'U1K485.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:60,cat:1,name:'1K+510鼠洞',photo:'U1K510.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:61,cat:1,name:'1K+530坡面孔洞',photo:'U1K530.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:62,cat:1,name:'1K+542坡面孔洞',photo:'U1K542.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:63,cat:1,name:'1K+545鼠洞',photo:'U1K545.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:64,cat:1,name:'1K+560孔洞',photo:'U1K560.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:65,cat:1,name:'1k+564坡面孔洞*3',photo:'U1K564.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:66,cat:1,name:'1k+565截水溝混泥土破損',photo:'U1K565.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:67,cat:1,name:'1k+580坡面孔洞',photo:'U1K580.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:68,cat:1,name:'1k+6100坡面孔洞',photo:'U1K610.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:69,cat:1,name:'1k+630坡面孔洞22x30x45',photo:'U1K630.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  {id:70,cat:1,name:'1k+650坡面孔洞',photo:'U1K650.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
-  // ── 2. 下游（待填入）──
-  // ── 3. 壩頂（待填入）──
-  // ── 4. 周邊（待填入）──
-  // ── 5. 附屬（待填入）──
-  // ── 6. 滲水（待填入）──
-  // ── 7. 越域排洪道（待填入）──
+  // ── 1. 上游 ──
+  {id:1,cat:1,name:'右副壩起點現況',photo:'URST',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:2,cat:1,name:'0k+050混凝土牆銜接上游坡面局部破壞',photo:'U0K050',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:3,cat:1,name:'0K+057坡面鼠洞',photo:'U0K057',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:4,cat:1,name:'0K+065坡面鼠洞',photo:'U0K065',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:5,cat:1,name:'0k+075混凝土胸牆局部破損',photo:'U0K075',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:6,cat:1,name:'0K+080坡面鼠洞',photo:'U0K080B',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:7,cat:1,name:'0K+080坡面鼠洞',photo:'U0K090',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:8,cat:1,name:'0K+080坡面鼠洞',photo:'U0K106',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:9,cat:1,name:'0k+110混凝土擋土牆局部破壞45x60x15',photo:'U0K110',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:10,cat:1,name:'0k+127混凝土牆局部破壞',photo:'U0K127',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:11,cat:1,name:'0K+128坡面鼠洞',photo:'U0K128',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:12,cat:1,name:'0k+137混凝土牆局部破壞',photo:'U0K137',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:13,cat:1,name:'0k+145混凝土牆局部破壞',photo:'U0K145',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:14,cat:1,name:'0k+150鼠洞60 x40 x5',photo:'U0K150',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:15,cat:1,name:'0K+180坡面鼠洞',photo:'U0K180B',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:16,cat:1,name:'0k+192混凝土牆開裂',photo:'U0K192',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:17,cat:1,name:'0k+207混凝土牆開裂',photo:'U0K207',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:18,cat:1,name:'0k+208鼠洞25x20x20',photo:'U0K208',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:19,cat:1,name:'0k+240鼠洞',photo:'U0K240',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:20,cat:1,name:'連絡橋左側現況',photo:'UBL1',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:21,cat:1,name:'連絡橋左側現況',photo:'UBL2',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:22,cat:1,name:'聯絡橋下方塌陷',photo:'UBD',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:23,cat:1,name:'0k+305截水溝旁孔洞',photo:'U0K305',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:24,cat:1,name:'0k+305截水溝旁孔洞',photo:'U0K306',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:25,cat:1,name:'0k+329混凝土胸牆局部破損',photo:'U0K329',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:26,cat:1,name:'0k+340鼠洞x1',photo:'U0K340',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:27,cat:1,name:'0k+380混凝土胸牆局部破損',photo:'U0K380',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:28,cat:1,name:'0k+420鼠洞x1',photo:'U0K420',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:29,cat:1,name:'0k+487混凝土胸牆局部破損',photo:'U0K487',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:30,cat:1,name:'0k+500溢洪管喇叭口現況',photo:'U0K500',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:31,cat:1,name:'0k+510孔洞',photo:'U0K510',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:32,cat:1,name:'0k+572孔洞30x20x20',photo:'U0K572',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:33,cat:1,name:'0k+582坡面局部沖刷100x40x25',photo:'U0K582',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:34,cat:1,name:'0k+612坡面局部沖刷80x50x20',photo:'U0K612',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:35,cat:1,name:'0k+624混凝土牆局部破損',photo:'U0K624',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:36,cat:1,name:'0k+630混凝土牆局部破損',photo:'U0K630',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:37,cat:1,name:'0k+715孔洞30x20x20',photo:'U0K715',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:38,cat:1,name:'0k+730混凝土牆局部破損',photo:'U0K730',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:39,cat:1,name:'0K+765孔洞',photo:'U0K765',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:40,cat:1,name:'0K+790孔洞',photo:'U0K790',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:41,cat:1,name:'0K+820上游側冒泡',photo:'U0K820',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:42,cat:1,name:'0K+850上游側冒泡',photo:'U0K850',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:43,cat:1,name:'0K+879孔洞',photo:'U0K879',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:44,cat:1,name:'0K+915上游側冒泡',photo:'U0K900A',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:45,cat:1,name:'0k+930鼠洞X1',photo:'U0K930',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:46,cat:1,name:'0k+942沖蝕坑X1',photo:'U0K942',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:47,cat:1,name:'0k+950沖蝕坑X1',photo:'U0K950',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:48,cat:1,name:'0k+975混凝土牆局部破損',photo:'U0K975',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:49,cat:1,name:'太陽能墩塊現況',photo:'USB1',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:50,cat:1,name:'太陽能墩塊現況',photo:'USB2',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:51,cat:1,name:'1k+015混凝土牆局部破損',photo:'U1K015',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:52,cat:1,name:'1K+095孔洞',photo:'U1K095',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:53,cat:1,name:'1K+100孔洞',photo:'U1K100',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:54,cat:1,name:'1k+167.5沖蝕孔',photo:'U1K167.5',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:55,cat:1,name:'1K+397坡面孔洞',photo:'U1K397',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:56,cat:1,name:'1k+420坡面孔洞35x18x60',photo:'U1K440',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:57,cat:1,name:'1K+450孔洞',photo:'U1K450',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:58,cat:1,name:'1k+470坡面孔洞',photo:'U1K470',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:59,cat:1,name:'1K+485坡面孔洞',photo:'U1K485',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:60,cat:1,name:'1K+510鼠洞',photo:'U1K510',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:61,cat:1,name:'1K+530坡面孔洞',photo:'U1K530',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:62,cat:1,name:'1K+542坡面孔洞',photo:'U1K542',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:63,cat:1,name:'1K+545鼠洞',photo:'U1K545',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:64,cat:1,name:'1K+560孔洞',photo:'U1K560',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:65,cat:1,name:'1k+564坡面孔洞*3',photo:'U1K564',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:66,cat:1,name:'1k+565截水溝混泥土破損',photo:'U1K565',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:67,cat:1,name:'1k+580坡面孔洞',photo:'U1K580',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:68,cat:1,name:'1k+6100坡面孔洞',photo:'U1K610',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:69,cat:1,name:'1k+630坡面孔洞22x30x45',photo:'U1K630',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:70,cat:1,name:'1k+650坡面孔洞',photo:'U1K650',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 2. 下游 ──
+  {id:71,cat:2,name:'現況良好無明顯變化',photo:'URST',location:'上游植草護坡(ㄧ)',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:72,cat:2,name:'現況良好無明顯變化',photo:'USA',location:'上游植草護坡(二)',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:73,cat:2,name:'現況良好無明顯變化',photo:'USB',location:'上游植草護坡(三)',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:74,cat:2,name:'建議進行修補作業',photo:'U0k057',location:'上游坡面動物挖掘孔洞(一)里程0k+ 57m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:75,cat:2,name:'1月現場檢查新增，建議進行修補作業',photo:'U0k080B',location:'上游坡面動物挖掘孔洞(二)里程0k+ 80m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:76,cat:2,name:'1月現場檢查新增，建議進行修補作業',photo:'U0k240',location:'上游坡面動物挖掘孔洞(三)里程0k+ 240m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:77,cat:2,name:'已填補修繕，現況良好',photo:'U0k930',location:'上游坡面動物挖掘孔洞(四)里程0k+ 930 m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:78,cat:2,name:'已填補修繕，現況良好',photo:'U1k545',location:'上游坡面動物挖掘孔洞(五)里程1k+545 m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:79,cat:2,name:'已填補修繕，現況良好',photo:'U0k306',location:'上游坡面沖蝕溝(一)里程0k+306m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:80,cat:2,name:'已填補修繕，現況良好',photo:'U0k942',location:'上游坡面沖蝕溝(二)里程0k+942m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:81,cat:2,name:'已填補修繕，現況良好',photo:'UBD',location:'上游坡面沖蝕坑洞(一)聯絡橋下方0k+285m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:82,cat:2,name:'已填補修繕，現況良好',photo:'U1k167.5',location:'上游坡面沖蝕坑洞(二)里程1k+167.5m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:83,cat:2,name:'已填補修繕，現況良好',photo:'U0k145',location:'混凝土胸牆破損(一)里程約0k+145m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:84,cat:2,name:'3月現場檢查新增，建議進行修補作業',photo:'U0k487',location:'混凝土胸牆破損(二)里程約0k+487m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:85,cat:2,name:'已填補修繕，現況良好',photo:'U0k630',location:'混凝土胸牆破損(三)里程約1k+630m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:86,cat:2,name:'已填補修繕，現況良好',photo:'U1k565',location:'混凝土截水溝破損 (四)里程約1k+565m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 3. 壩頂 ──
+  {id:87,cat:3,name:'現況良好',photo:'0',location:'里程0k+ 000m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:88,cat:3,name:'0k+010m垂直壩軸裂縫100cm x 2mm',photo:'10',location:'里程0k+ 010m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:89,cat:3,name:'0k+130m垂直壩軸裂縫80cm x 2mm',photo:'130',location:'里程0k+ 130m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:90,cat:3,name:'現況良好',photo:'200',location:'里程0k+ 200m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:91,cat:3,name:'',photo:'UT',location:'取水塔現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:92,cat:3,name:'',photo:'UB',location:'取水塔橋面板現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:93,cat:3,name:'',photo:'USA',location:'上游植草護坡現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:94,cat:3,name:'',photo:'USB',location:'上游植草護坡現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:95,cat:3,name:'0k+490m垂直壩軸裂縫100cm x 2mm',photo:'490',location:'里程0k+490m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:96,cat:3,name:'0k+540m垂直壩軸裂縫80cm x 2mm',photo:'540',location:'里程0k+540m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:97,cat:3,name:'0k+580m平行壩軸裂縫150cm x 2mm',photo:'580',location:'里程0k+580m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:98,cat:3,name:'0k+610m平行壩軸裂縫250cm x 2mm',photo:'610',location:'里程0k+610m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:99,cat:3,name:'0k+640m沿壩軸裂縫800cm x 2mm',photo:'640',location:'',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:100,cat:3,name:'0k+690m平行壩軸裂縫300cm x 2mm',photo:'690',location:'里程0k+690m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:101,cat:3,name:'0k+730m垂直壩軸裂縫200cm x 2mm',photo:'730',location:'里程0k+ 730m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:102,cat:3,name:'0k+770m垂直壩軸裂縫300cm x 2mm',photo:'770',location:'里程0k+ 770m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:103,cat:3,name:'0k+810m垂直壩軸裂縫300cm x 2mm',photo:'810',location:'里程0k+ 810m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:104,cat:3,name:'0k+836m垂直壩軸裂縫100cm x 2mm',photo:'836',location:'里程0k+ 836m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:105,cat:3,name:'0k+836m平行壩軸裂縫80cm x 2mm',photo:'836-B',location:'里程0k+ 836m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:106,cat:3,name:'現況良好',photo:'900',location:'里程0k+900m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:107,cat:3,name:'0k+1000m平行壩軸裂縫800cm x 2mm',photo:'1000',location:'里程0k+1000m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:108,cat:3,name:'1k+575m垂直壩軸裂縫70cm x 2mm',photo:'1575',location:'里程1k+ 575m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:109,cat:3,name:'1k+690m平行壩軸裂縫200cm x 2mm',photo:'1700',location:'里程1k+690m~1k+750m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 4. 周邊 ──
+  {id:110,cat:4,name:'植生與拋石良好',photo:'水庫周邊坡面1',location:'水庫周邊坡面',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:111,cat:4,name:'邊坡完整良好',photo:'水庫周邊坡面2',location:'水庫周邊坡面',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:112,cat:4,name:'邊坡完整良好',photo:'水庫周邊坡面3',location:'水庫周邊坡面',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:113,cat:4,name:'拋石完整良好',photo:'水庫周邊坡面4',location:'水庫周邊坡面',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:114,cat:4,name:'寬度約15mm',photo:'弧形裂縫P6',location:'水庫自行車道路臨水側弧形裂縫(P6)',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:115,cat:4,name:'寬度約15mm',photo:'弧形裂縫P7',location:'水庫自行車道路臨水側弧形裂縫(P7)',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:116,cat:4,name:'持續觀察',photo:'0k+300~400m道路裂縫-1',location:'0k+300~400m水庫自行車道表面裂縫',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:117,cat:4,name:'已填補修繕，現況良好',photo:'0k+300~400m道路局部破損',location:'0k+300~400m水庫自行車道局部破損',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:118,cat:4,name:'日昇吊橋基礎裸露，建議通報權責單位辦理維護',photo:'日昇吊橋基礎裸露',location:'日昇吊橋基礎裸露',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:119,cat:4,name:'無明顯變化',photo:'生態池周邊1',location:'生態池周邊',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:120,cat:4,name:'無明顯變化',photo:'生態池周邊2',location:'生態池周邊',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:121,cat:4,name:'無明顯變化',photo:'U0k820',location:'蓄水區冒泡0k+820m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:122,cat:4,name:'無明顯變化',photo:'U0k850',location:'蓄水區冒泡0k+850m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:123,cat:4,name:'持續觀察',photo:'U0k900A',location:'蓄水區冒泡0k+915m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 5. 附屬 ──
+  {id:124,cat:5,name:'沒於水中，無法目視檢查',photo:'U0k500',location:'豎井溢洪管兼排砂道喇叭口',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:125,cat:5,name:'完整良好',photo:'閘閥室現況',location:'閘閥室現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:126,cat:5,name:'交界處完整良好',photo:'閘門門框現況',location:'閘門門框現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:127,cat:5,name:'昇層縫輕微滲水，無明顯變 化',photo:'右側翼牆',location:'右側翼牆',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:128,cat:5,name:'完整  良好',photo:'左側翼牆',location:'左側翼牆',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:129,cat:5,name:'已修補，持續觀察',photo:'靜水池尾檻及底板裂縫',location:'靜水池尾檻及底板現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:130,cat:5,name:'河道局部淤積及植物生長',photo:'下游河道現況1',location:'下游河道現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:131,cat:5,name:'完整  良好',photo:'UT',location:'取水塔',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:132,cat:5,name:'完整  良好',photo:'DSA',location:'分水工結構',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:133,cat:5,name:'建議進行修補',photo:'分水工結構裂縫',location:'分水工結構',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:134,cat:5,name:'完整  良好',photo:'UBL1',location:'聯絡橋梁橋墩',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:135,cat:5,name:'完整  良好',photo:'UBL2',location:'聯絡橋梁橋墩',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:136,cat:5,name:'完整  良好',photo:'UB',location:'聯絡橋梁橋墩面版',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 6. 滲水 ──
+  {id:137,cat:6,name:'長年積水無明顯變化',photo:'滲水點1',location:'滲水點1',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:138,cat:6,name:'因農民整地，滲水點不易已目視檢查',photo:'滲水點2',location:'滲水點2',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:139,cat:6,name:'因農民整地，滲水點不易已目視檢查',photo:'滲水點3',location:'滲水點3',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:140,cat:6,name:'因農民整地，滲水點不易已目視檢查',photo:'滲水點4',location:'滲水點4',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:141,cat:6,name:'滲水點出露，無攜出砂',photo:'滲水點5',location:'滲水點5',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:142,cat:6,name:'滲水點已被表土淤積掩蓋',photo:'滲水點6',location:'滲水點6',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:143,cat:6,name:'滲水點已被表土淤積掩蓋',photo:'滲水點7',location:'滲水點7',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:144,cat:6,name:'河道局部淤積及植物生長',photo:'下游河道現況2',location:'下游河道',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:145,cat:6,name:'已填補修繕，現況良好',photo:'滲水區路面混凝土破裂滲水',location:'滲水區孔洞',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 7. 越域排洪 ──
+  {id:146,cat:7,name:'無明顯變化',photo:'引水渠現況',location:'引水渠現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:147,cat:7,name:'施工縫植生',photo:'溢流堰現況',location:'溢流堰現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:148,cat:7,name:'結構良好，輕微滲水',photo:'溢流堰左側牆',location:'溢流堰左側牆',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:149,cat:7,name:'結構良好，輕微滲水',photo:'溢流堰右側牆',location:'溢流堰右側牆',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:150,cat:7,name:'既有掏刷坑洞，建議進行修補',photo:'越域排洪道入口左側淘刷',location:'越域排洪道入口左側沖刷',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:151,cat:7,name:'已填補修繕',photo:'堤防段混凝土裂縫現況1',location:'堤防段混凝土裂縫現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:152,cat:7,name:'已填補修繕',photo:'堤防段混凝土裂縫現況2',location:'堤防段混凝土裂縫現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:153,cat:7,name:'已填補修繕',photo:'堤防段混凝土裂縫現況3',location:'堤防段混凝土裂縫現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:154,cat:7,name:'已填補修繕',photo:'H4',location:'堤防段上游側局部裂縫及破損',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:155,cat:7,name:'已填補修繕',photo:'H6',location:'堤防段上游側局部裂縫及破損',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:156,cat:7,name:'現況良好',photo:'排洪隧道靜水池現況',location:'排洪隧道靜水池現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:157,cat:7,name:'已填補修繕',photo:'靜水池右側混凝土階梯下方排水系統現況',location:'靜水池上方階梯右側排水系統現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:158,cat:7,name:'已填補修繕',photo:'靜水池左側混凝土階梯下方排水系統現況',location:'靜水池上方階梯左側土層淘刷',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:159,cat:7,name:'地磚局部錯動',photo:'越域排洪道上方聯外道路0k+120~315',location:'越域排洪道上方聯外道路0k+120~315m',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:160,cat:7,name:'已填補修繕',photo:'越域排洪道上方聯外道路0k+511局部破損',location:'越域排洪道上方聯外道路入口處0k+511m             局部 破損',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:161,cat:7,name:'現況良好',photo:'臨時土堤現況',location:'臨時土堤現況',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
 ];
 
 // 照片路徑：與 HTML 放在同一資料夾
@@ -762,14 +850,25 @@ function showDetail(index) {
     document.getElementById('anomalyCoordRow').style.display = 'none';
   }
 
-  // Photo — 自動嘗試 .jpg / .jpeg
+  // Photo — 自動嘗試 .jpg / .jpeg，載入後讀 EXIF GPS
   const img = document.getElementById('prevPhotoImg');
   const ph = document.getElementById('prevPhotoPlaceholder');
   if (item.photo) {
-    // 移除舊副檔名取得 basename
     const base = item.photo.replace(/\.(jpe?g|png|gif|webp)$/i, '');
     img.style.display = 'block';
     ph.style.display = 'none';
+    img.onload = () => {
+      if (!item.lat || !item.lng) {
+        readExifGPS(img.src, (lat, lng) => {
+          if (lat && lng) {
+            item.lat = lat; item.lng = lng;
+            document.getElementById('anomalyCoordRow').style.display = 'flex';
+            document.getElementById('anomalyCoord').textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)} (照片EXIF)`;
+            updateGPSDistance(item);
+          }
+        });
+      }
+    };
     tryPhotoExtensions(img, base, () => {
       img.style.display = 'none';
       ph.style.display = 'block';
@@ -828,16 +927,38 @@ function goBack(from) {
 function handleCapture(e) {
   const file = e.target.files[0];
   if (!file) return;
+  const item = currentItems[currentIndex];
+
+  // 取得原本照片的 basename 作為檔名
+  const basename = item.photo
+    ? item.photo.replace(/\.(jpe?g|png|gif|webp)$/i, '')
+    : `photo_${item.id}`;
+
+  // 判斷副檔名（保留原始拍照格式）
+  const ext = file.type === 'image/png' ? '.png' : '.jpg';
+  const filename = basename + ext;
+
   const reader = new FileReader();
   reader.onload = (ev) => {
     const dataURL = ev.target.result;
+
+    // 更新畫面縮圖
     currentItems[currentIndex].photo_taken = dataURL;
     document.getElementById('captureBtn').textContent = '✅ 已拍照';
     document.getElementById('captureBtn').className = 'btn-capture has-photo';
     const thumb = document.getElementById('thumbPreview');
     thumb.src = dataURL;
     thumb.style.display = 'block';
-    showToast('照片已儲存');
+
+    // 自動下載到手機，檔名 = 原本照片名稱
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    showToast(`已下載：${filename}`);
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -856,6 +977,91 @@ function openLightbox() {
 }
 function closeLightbox() {
   document.getElementById('lightbox').style.display = 'none';
+}
+
+// ─── EXIF GPS 讀取 ────────────────────────────────────────────────────────
+// 純 JavaScript 解析 JPEG EXIF，不需要外部套件
+function readExifGPS(url, callback) {
+  fetch(url)
+    .then(r => r.arrayBuffer())
+    .then(buf => {
+      const view = new DataView(buf);
+      // 確認是 JPEG
+      if (view.getUint16(0) !== 0xFFD8) { callback(null, null); return; }
+      let offset = 2;
+      while (offset < view.byteLength - 2) {
+        const marker = view.getUint16(offset);
+        offset += 2;
+        if (marker === 0xFFE1) { // APP1 = EXIF
+          const len = view.getUint16(offset);
+          const exifBuf = buf.slice(offset + 2, offset + len);
+          const gps = parseExifGPS(exifBuf);
+          callback(gps ? gps.lat : null, gps ? gps.lng : null);
+          return;
+        }
+        if ((marker & 0xFF00) !== 0xFF00) break;
+        offset += view.getUint16(offset);
+      }
+      callback(null, null);
+    })
+    .catch(() => callback(null, null));
+}
+
+function parseExifGPS(buf) {
+  const view = new DataView(buf);
+  // 確認 Exif header
+  const header = String.fromCharCode(...new Uint8Array(buf, 0, 4));
+  if (header !== 'Exif') return null;
+  const tiffOffset = 6;
+  const byteOrder = view.getUint16(tiffOffset);
+  const le = byteOrder === 0x4949; // little endian
+  const getU16 = o => view.getUint16(tiffOffset + o, le);
+  const getU32 = o => view.getUint32(tiffOffset + o, le);
+
+  // 找 IFD0
+  const ifd0 = getU32(4);
+  const ifd0Count = getU16(ifd0);
+  let gpsIfdOffset = null;
+  for (let i = 0; i < ifd0Count; i++) {
+    const e = ifd0 + 2 + i * 12;
+    if (getU16(e) === 0x8825) { gpsIfdOffset = getU32(e + 8); break; }
+  }
+  if (!gpsIfdOffset) return null;
+
+  // 解析 GPS IFD
+  const gpsCount = getU16(gpsIfdOffset);
+  const tags = {};
+  for (let i = 0; i < gpsCount; i++) {
+    const e = gpsIfdOffset + 2 + i * 12;
+    const tag = getU16(e);
+    const type = getU16(e + 2);
+    const count = getU32(e + 4);
+    const valOffset = e + 8;
+    if (type === 2) { // ASCII
+      const strOffset = count > 4 ? getU32(valOffset) : valOffset - tiffOffset;
+      tags[tag] = String.fromCharCode(...new Uint8Array(buf, tiffOffset + strOffset, count)).replace(/\0/g,'');
+    } else if (type === 5) { // RATIONAL
+      const rOffset = getU32(valOffset);
+      const vals = [];
+      for (let j = 0; j < count; j++) {
+        const num = getU32(rOffset + j * 8);
+        const den = getU32(rOffset + j * 8 + 4);
+        vals.push(den ? num / den : 0);
+      }
+      tags[tag] = vals;
+    }
+  }
+
+  // tag 1=LatRef, 2=Lat, 3=LngRef, 4=Lng
+  if (!tags[2] || !tags[4]) return null;
+  const dmsToDecimal = (dms, ref) => {
+    const deg = dms[0] + dms[1]/60 + dms[2]/3600;
+    return (ref === 'S' || ref === 'W') ? -deg : deg;
+  };
+  return {
+    lat: dmsToDecimal(tags[2], tags[1]),
+    lng: dmsToDecimal(tags[4], tags[3])
+  };
 }
 
 // ─── GPS ──────────────────────────────────────────────────────────────────
