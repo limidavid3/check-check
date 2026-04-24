@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>阿公店水庫現場檢查系統</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --surface3: #30363d;
+    --border: #30363d;
+    --accent: #1f6feb;
+    --accent2: #388bfd;
+    --success: #2ea043;
+    --warning: #d29922;
+    --danger: #da3633;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #484f58;
+    --gold: #f0a500;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* ── SPLASH ── */
+  #splash {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; gap: 16px;
+    background-image: radial-gradient(ellipse at 30% 20%, rgba(31,111,235,0.15) 0%, transparent 60%),
+                      radial-gradient(ellipse at 70% 80%, rgba(240,165,0,0.08) 0%, transparent 55%);
+  }
+  .splash-icon { font-size: 52px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .splash-title { font-size: 22px; font-weight: 700; letter-spacing: 2px; color: var(--text); text-align: center; line-height: 1.5; }
+  .splash-sub { font-size: 13px; color: var(--text2); letter-spacing: 4px; }
+  .splash-btn {
+    margin-top: 24px; padding: 14px 40px; border-radius: 50px;
+    background: linear-gradient(135deg, var(--accent), #388bfd);
+    color: #fff; font-size: 16px; font-weight: 600; border: none;
+    letter-spacing: 1px; cursor: pointer; box-shadow: 0 4px 20px rgba(31,111,235,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .splash-btn:active { transform: scale(0.96); }
+  .splash-year { font-size: 12px; color: var(--text3); margin-top: 8px; }
+
+  /* ── CATEGORY PAGE ── */
+  #catPage {
+    position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; overflow: hidden;
+    background-image: radial-gradient(ellipse at 20% 10%, rgba(31,111,235,0.1) 0%, transparent 50%);
+  }
+  .cat-header {
+    padding: 14px 16px 10px; background: var(--surface);
+    border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
+  }
+  .cat-header-icon { font-size: 20px; }
+  .cat-header-title { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+  .cat-header-date { font-size: 11px; color: var(--text2); margin-left: auto; }
+
+  .cat-scroll { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .cat-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.12s;
+    position: relative; overflow: hidden;
+  }
+  .cat-item:active { transform: scale(0.98); background: var(--surface2); }
+  .cat-item::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--accent); border-radius: 3px 0 0 3px;
+  }
+  .cat-num {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; color: var(--accent2); flex-shrink: 0;
+    border: 1.5px solid var(--surface3);
+  }
+  .cat-info { flex: 1; }
+  .cat-name { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .cat-count { font-size: 12px; color: var(--text2); }
+  .cat-arrow { color: var(--text3); font-size: 14px; }
+
+  /* ── OVERVIEW PAGE ── */
+  #overviewPage {
+    position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; overflow: hidden;
+  }
+  .ov-header {
+    padding: 12px 14px 10px; background: var(--surface);
+    border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .btn-back {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 6px 12px; border-radius: 20px;
+    font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+    transition: background 0.15s; flex-shrink: 0;
+  }
+  .btn-back:active { background: var(--surface3); }
+  .ov-title { font-size: 14px; font-weight: 700; flex: 1; text-align: center; }
+  .ov-count { font-size: 12px; color: var(--text2); flex-shrink: 0; }
+
+  .ov-grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-content: start; }
+  .ov-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; cursor: pointer;
+    transition: transform 0.12s, border-color 0.15s;
+  }
+  .ov-card:active { transform: scale(0.96); }
+  .ov-card.active-card { border-color: var(--accent2); box-shadow: 0 0 0 1px var(--accent2); }
+  .ov-thumb {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover;
+    background: var(--surface2); display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: var(--text3);
+  }
+  .ov-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .ov-card-num {
+    padding: 4px 6px; font-size: 10px; color: var(--text2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-weight: 600;
+  }
+  .ov-card-name { padding: 0 6px 5px; font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── DETAIL PAGE ── */
+  #detailPage {
+    position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; overflow: hidden;
+  }
+
+  /* Header */
+  .det-header {
+    padding: 8px 12px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .det-header-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+  .det-cat-badge {
+    background: var(--accent); color: #fff;
+    padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .det-progress { font-size: 12px; color: var(--text2); white-space: nowrap; }
+  .btn-overview {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--accent2); padding: 5px 10px; border-radius: 16px;
+    font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .btn-overview:active { background: var(--surface3); }
+
+  /* GPS Bar */
+  .gps-bar {
+    padding: 5px 12px; background: var(--surface2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0; font-size: 11px;
+  }
+  .gps-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); flex-shrink: 0; animation: pulse 2s infinite; }
+  .gps-dot.no-gps { background: var(--warning); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .gps-text { color: var(--text2); flex: 1; }
+  .gps-dist { font-weight: 700; color: var(--gold); }
+  .gps-dir { color: var(--accent2); }
+
+  /* Main content: landscape layout */
+  .det-body {
+    flex: 1; display: flex; min-height: 0;
+    /* landscape: side by side */
+  }
+
+  /* Photo panel (left in landscape) */
+  .photo-panel {
+    position: relative; flex-shrink: 0;
+    width: 55%; display: flex; flex-direction: column;
+    background: #000; border-right: 1px solid var(--border);
+  }
+  .photo-label {
+    position: absolute; top: 8px; left: 8px; z-index: 2;
+    background: rgba(0,0,0,0.7); color: var(--text2);
+    padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+  .prev-photo {
+    width: 100%; height: 100%; object-fit: contain; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); font-size: 36px; color: var(--text3);
+  }
+  .prev-photo img { width: 100%; height: 100%; object-fit: contain; }
+
+  /* Info panel (right) */
+  .info-panel {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+  }
+
+  .info-scroll { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .info-row { display: flex; gap: 6px; align-items: flex-start; }
+  .info-tag {
+    font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;
+    letter-spacing: 0.5px; padding-top: 2px; flex-shrink: 0; width: 52px;
+  }
+  .info-val { font-size: 13px; color: var(--text); font-weight: 500; line-height: 1.4; word-break: break-all; }
+  .info-val.big { font-size: 15px; font-weight: 700; color: var(--text); }
+
+  .divider { height: 1px; background: var(--border); margin: 2px 0; }
+
+  /* Remark section */
+  .remark-label { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 0.5px; margin-bottom: 4px; }
+  .remark-area {
+    width: 100%; min-height: 60px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    color: var(--text); font-size: 13px; padding: 8px; resize: none;
+    font-family: inherit; line-height: 1.5;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  .remark-area:focus { outline: none; border-color: var(--accent2); }
+
+  /* Photo capture */
+  .capture-row {
+    display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+    padding: 8px 12px; background: var(--surface); border-top: 1px solid var(--border);
+  }
+  .btn-capture {
+    flex: 1; padding: 9px; border-radius: var(--radius);
+    background: var(--surface2); border: 1.5px dashed var(--border);
+    color: var(--text2); font-size: 12px; cursor: pointer; text-align: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-capture:active { background: var(--surface3); }
+  .btn-capture.has-photo { border-style: solid; border-color: var(--success); color: var(--success); }
+  .thumb-preview {
+    width: 44px; height: 44px; border-radius: 6px; object-fit: cover;
+    border: 1.5px solid var(--success); display: none;
+  }
+
+  /* Nav footer */
+  .nav-footer {
+    padding: 8px 12px; background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+  }
+  .btn-add {
+    padding: 9px 14px; border-radius: var(--radius);
+    background: rgba(46,160,67,0.15); border: 1.5px solid var(--success);
+    color: var(--success); font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-add:active { background: rgba(46,160,67,0.3); }
+  .btn-prev {
+    padding: 9px 14px; border-radius: var(--radius);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .btn-prev:active { background: var(--surface3); }
+  .btn-next {
+    flex: 1; padding: 9px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: opacity 0.15s; box-shadow: 0 2px 12px rgba(31,111,235,0.35);
+  }
+  .btn-next:active { opacity: 0.8; }
+  .btn-next:disabled { opacity: 0.4; cursor: default; }
+
+  /* ── ADD ANOMALY PAGE ── */
+  #addPage {
+    position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; overflow: hidden;
+  }
+  .add-header {
+    padding: 12px 14px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .add-title { font-size: 15px; font-weight: 700; flex: 1; }
+  .add-ctx { font-size: 11px; color: var(--text2); text-align: right; line-height: 1.5; }
+
+  .add-scroll { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 12px; font-weight: 700; color: var(--text2); letter-spacing: 0.5px; }
+  .field-input, .field-select, .field-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text); font-size: 14px; padding: 10px 12px;
+    font-family: inherit; -webkit-appearance: none; transition: border-color 0.15s;
+  }
+  .field-input:focus, .field-select:focus, .field-textarea:focus { outline: none; border-color: var(--accent2); }
+  .field-textarea { min-height: 80px; resize: none; }
+  .field-select option { background: var(--surface2); }
+
+  .gps-capture-btn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+    background: rgba(31,111,235,0.1); border: 1.5px solid var(--accent);
+    border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 600;
+    color: var(--accent2); transition: background 0.15s;
+  }
+  .gps-capture-btn:active { background: rgba(31,111,235,0.2); }
+  .gps-status { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  .add-photo-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px; background: var(--surface2); border: 2px dashed var(--border);
+    border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text2);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .add-photo-btn.has-photo { border-color: var(--success); border-style: solid; color: var(--success); }
+
+  .add-footer {
+    padding: 12px 14px; background: var(--surface); border-top: 1px solid var(--border);
+    display: flex; gap: 8px;
+  }
+  .btn-cancel {
+    flex: 1; padding: 11px; border-radius: var(--radius);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .btn-save {
+    flex: 2; padding: 11px; border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--success), #3fb950);
+    border: none; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(46,160,67,0.35);
+  }
+
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200;
+    display: none; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+  }
+  #lightbox img { max-width: 95vw; max-height: 80vh; object-fit: contain; border-radius: 8px; }
+  #lightbox .lb-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer; color: #fff;
+  }
+  #lightbox .lb-caption { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: rgba(30,30,30,0.92); color: #fff; padding: 8px 18px;
+    border-radius: 20px; font-size: 13px; z-index: 300; white-space: nowrap;
+    backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
+    pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+
+  /* Scrollbar style */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+
+  /* Landscape hint: override for large screens */
+  @media (orientation: portrait) and (max-width: 500px) {
+    .photo-panel { width: 100%; height: 42vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .det-body { flex-direction: column; }
+  }
+  @media (orientation: landscape) {
+    .photo-panel { width: 52%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ SPLASH ══ -->
+<div id="splash">
+  <div class="splash-icon">🏞️</div>
+  <div class="splash-title">阿公店水庫<br>現場檢查系統</div>
+  <div class="splash-sub">AGONG STORE RESERVOIR</div>
+  <button class="splash-btn" onclick="enterSystem()">進入系統</button>
+  <div class="splash-year" id="splashDate"></div>
+</div>
+
+<!-- ══ CATEGORY PAGE ══ -->
+<div id="catPage" style="display:none; flex-direction:column;">
+  <div class="cat-header">
+    <span class="cat-header-icon">🗂️</span>
+    <span class="cat-header-title">選擇檢查區域</span>
+    <span class="cat-header-date" id="catDate"></span>
+  </div>
+  <div class="cat-scroll" id="catList"></div>
+</div>
+
+<!-- ══ OVERVIEW PAGE ══ -->
+<div id="overviewPage" style="display:none; flex-direction:column;">
+  <div class="ov-header">
+    <button class="btn-back" onclick="goBack('overview')">← 返回</button>
+    <span class="ov-title" id="ovTitle"></span>
+    <span class="ov-count" id="ovCount"></span>
+  </div>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+
+<!-- ══ DETAIL PAGE ══ -->
+<div id="detailPage" style="display:none; flex-direction:column;">
+  <div class="det-header">
+    <div class="det-header-left">
+      <button class="btn-back" onclick="goBack('detail')">← 返回</button>
+      <span class="det-cat-badge" id="detCatBadge"></span>
+      <span class="det-progress" id="detProgress"></span>
+    </div>
+    <button class="btn-overview" onclick="showOverview()">總覽</button>
+  </div>
+  <div class="gps-bar">
+    <div class="gps-dot" id="gpsDot"></div>
+    <span class="gps-text" id="gpsText">正在取得位置…</span>
+    <span class="gps-dist" id="gpsDist"></span>
+    <span class="gps-dir" id="gpsDir"></span>
+  </div>
+
+  <div class="det-body">
+    <!-- Left: photo -->
+    <div class="photo-panel">
+      <div class="photo-label">上個月照片</div>
+      <div class="prev-photo" id="prevPhoto" onclick="openLightbox()">
+        <span id="prevPhotoPlaceholder">📷</span>
+        <img id="prevPhotoImg" src="" alt="" style="display:none;" />
+      </div>
+    </div>
+
+    <!-- Right: info + remark -->
+    <div class="info-panel">
+      <div class="info-scroll">
+        <div class="info-row">
+          <span class="info-tag">名稱</span>
+          <span class="info-val big" id="anomalyName">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-tag">照片</span>
+          <span class="info-val" id="anomalyPhoto" style="color:var(--text2); font-size:11px;">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="info-row">
+          <span class="info-tag">位置</span>
+          <span class="info-val" id="anomalyLoc">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-tag">新增日期</span>
+          <span class="info-val" id="anomalyDate" style="color:var(--text2); font-size:12px;">—</span>
+        </div>
+        <div class="info-row" id="anomalyCoordRow" style="display:none;">
+          <span class="info-tag">座標</span>
+          <span class="info-val" id="anomalyCoord" style="font-size:11px; color:var(--text2);">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="remark-label">現場紀錄</div>
+        <textarea class="remark-area" id="remarkArea" placeholder="輸入現場狀況描述…" rows="3"></textarea>
+      </div>
+
+      <!-- Capture row -->
+      <div class="capture-row">
+        <input type="file" id="captureInput" accept="image/*" capture="environment" style="display:none;" onchange="handleCapture(event)">
+        <button class="btn-capture" id="captureBtn" onclick="document.getElementById('captureInput').click()">
+          📷 拍照記錄
+        </button>
+        <img class="thumb-preview" id="thumbPreview" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav footer -->
+  <div class="nav-footer">
+    <button class="btn-add" onclick="showAddPage()">＋ 新增</button>
+    <button class="btn-prev" id="btnPrev" onclick="navigate(-1)">上一個</button>
+    <button class="btn-next" id="btnNext" onclick="navigate(1)">下一個 →</button>
+  </div>
+</div>
+
+<!-- ══ ADD ANOMALY PAGE ══ -->
+<div id="addPage" style="display:none; flex-direction:column;">
+  <div class="add-header">
+    <button class="btn-back" onclick="cancelAdd()">← 取消</button>
+    <span class="add-title">新增異狀</span>
+    <div class="add-ctx" id="addCtx"></div>
+  </div>
+  <div class="add-scroll">
+    <div class="field-group">
+      <div class="field-label">異狀名稱 *</div>
+      <input type="text" class="field-input" id="addName" placeholder="請輸入異狀名稱">
+    </div>
+    <div class="field-group">
+      <div class="field-label">區域分類</div>
+      <select class="field-select" id="addCat">
+        <option value="1">1. 上游</option>
+        <option value="2">2. 下游</option>
+        <option value="3">3. 壩頂</option>
+        <option value="4">4. 周邊</option>
+        <option value="5">5. 附屬</option>
+        <option value="6">6. 滲水</option>
+        <option value="7">7. 越域排洪道</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <div class="field-label">異狀位置描述</div>
+      <input type="text" class="field-input" id="addLoc" placeholder="例：壩頂右側第3號樁旁">
+    </div>
+    <div class="field-group">
+      <div class="field-label">GPS 位置</div>
+      <button class="gps-capture-btn" onclick="captureAddGPS()">
+        <span>📍</span> 擷取目前位置
+      </button>
+      <div class="gps-status" id="addGpsStatus">尚未取得</div>
+    </div>
+    <div class="field-group">
+      <div class="field-label">現場描述</div>
+      <textarea class="field-textarea" id="addDesc" placeholder="描述異狀狀況…"></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">拍照</div>
+      <input type="file" id="addPhotoInput" accept="image/*" capture="environment" style="display:none;" onchange="handleAddPhoto(event)">
+      <div class="add-photo-btn" id="addPhotoBtn" onclick="document.getElementById('addPhotoInput').click()">
+        <span>📷</span> <span id="addPhotoBtnLabel">點擊拍照</span>
+      </div>
+    </div>
+  </div>
+  <div class="add-footer">
+    <button class="btn-cancel" onclick="cancelAdd()">取消</button>
+    <button class="btn-save" onclick="saveAdd()">儲存新增異狀</button>
+  </div>
+</div>
+
+<!-- ══ LIGHTBOX ══ -->
+<div id="lightbox">
+  <div class="lb-close" onclick="closeLightbox()">✕</div>
+  <img id="lbImg" src="" alt="">
+  <div class="lb-caption" id="lbCaption"></div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────
+// Replace this with your Excel data
+// Format: categories[catId] = { name, items: [{id, name, photo, location, addedDate, lat, lng}] }
+const CATEGORIES = {
+  1: { name: '上游', icon: '🌊' },
+  2: { name: '下游', icon: '💧' },
+  3: { name: '壩頂', icon: '🏔️' },
+  4: { name: '周邊', icon: '🌿' },
+  5: { name: '附屬', icon: '🔧' },
+  6: { name: '滲水', icon: '💦' },
+  7: { name: '越域排洪道', icon: '🚰' }
+};
+
+// ── 資料來源：阿公店現場檢查系統-5月用.xlsx ──
+// 每個月更新 Excel 後重新上傳給 Claude 即可自動更新此處資料
+// 照片副檔名預設 .jpg，如需更改請修改下方 getPhotoSrc() 函式
+let anomalies = [
+  // ── 1. 上游（共 70 筆）──
+  {id:1,cat:1,name:'右副壩起點現況',photo:'URST.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:2,cat:1,name:'0k+050混凝土牆銜接上游坡面局部破壞',photo:'U0K050.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:3,cat:1,name:'0K+057坡面鼠洞',photo:'U0K057.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:4,cat:1,name:'0K+065坡面鼠洞',photo:'U0K065.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:5,cat:1,name:'0k+075混凝土胸牆局部破損',photo:'U0K075.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:6,cat:1,name:'0K+080坡面鼠洞',photo:'U0K080B.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:7,cat:1,name:'0K+080坡面鼠洞',photo:'U0K090.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:8,cat:1,name:'0K+080坡面鼠洞',photo:'U0K106.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:9,cat:1,name:'0k+110混凝土擋土牆局部破壞45x60x15',photo:'U0K110.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:10,cat:1,name:'0k+127混凝土牆局部破壞',photo:'U0K127.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:11,cat:1,name:'0K+128坡面鼠洞',photo:'U0K128.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:12,cat:1,name:'0k+137混凝土牆局部破壞',photo:'U0K137.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:13,cat:1,name:'0k+145混凝土牆局部破壞',photo:'U0K145.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:14,cat:1,name:'0k+150鼠洞60 x40 x5',photo:'U0K150.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:15,cat:1,name:'0K+180坡面鼠洞',photo:'U0K180B.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:16,cat:1,name:'0k+192混凝土牆開裂',photo:'U0K192.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:17,cat:1,name:'0k+207混凝土牆開裂',photo:'U0K207.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:18,cat:1,name:'0k+208鼠洞25x20x20',photo:'U0K208.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:19,cat:1,name:'0k+240鼠洞',photo:'U0K240.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:20,cat:1,name:'連絡橋左側現況',photo:'UBL1.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:21,cat:1,name:'連絡橋左側現況',photo:'UBL2.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:22,cat:1,name:'聯絡橋下方塌陷',photo:'UBD.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:23,cat:1,name:'0k+305截水溝旁孔洞',photo:'U0K305.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:24,cat:1,name:'0k+305截水溝旁孔洞',photo:'U0K306.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:25,cat:1,name:'0k+329混凝土胸牆局部破損',photo:'U0K329.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:26,cat:1,name:'0k+340鼠洞x1',photo:'U0K340.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:27,cat:1,name:'0k+380混凝土胸牆局部破損',photo:'U0K380.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:28,cat:1,name:'0k+420鼠洞x1',photo:'U0K420.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:29,cat:1,name:'0k+487混凝土胸牆局部破損',photo:'U0K487.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:30,cat:1,name:'0k+500溢洪管喇叭口現況',photo:'U0K500.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:31,cat:1,name:'0k+510孔洞',photo:'U0K510.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:32,cat:1,name:'0k+572孔洞30x20x20',photo:'U0K572.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:33,cat:1,name:'0k+582坡面局部沖刷100x40x25',photo:'U0K582.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:34,cat:1,name:'0k+612坡面局部沖刷80x50x20',photo:'U0K612.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:35,cat:1,name:'0k+624混凝土牆局部破損',photo:'U0K624.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:36,cat:1,name:'0k+630混凝土牆局部破損',photo:'U0K630.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:37,cat:1,name:'0k+715孔洞30x20x20',photo:'U0K715.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:38,cat:1,name:'0k+730混凝土牆局部破損',photo:'U0K730.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:39,cat:1,name:'0K+765孔洞',photo:'U0K765.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:40,cat:1,name:'0K+790孔洞',photo:'U0K790.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:41,cat:1,name:'0K+820上游側冒泡',photo:'U0K820.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:42,cat:1,name:'0K+850上游側冒泡',photo:'U0K850.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:43,cat:1,name:'0K+879孔洞',photo:'U0K879.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:44,cat:1,name:'0K+915上游側冒泡',photo:'U0K900A.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:45,cat:1,name:'0k+930鼠洞X1',photo:'U0K930.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:46,cat:1,name:'0k+942沖蝕坑X1',photo:'U0K942.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:47,cat:1,name:'0k+950沖蝕坑X1',photo:'U0K950.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:48,cat:1,name:'0k+975混凝土牆局部破損',photo:'U0K975.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:49,cat:1,name:'太陽能墩塊現況',photo:'USB1.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:50,cat:1,name:'太陽能墩塊現況',photo:'USB2.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:51,cat:1,name:'1k+015混凝土牆局部破損',photo:'U1K015.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:52,cat:1,name:'1K+095孔洞',photo:'U1K095.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:53,cat:1,name:'1K+100孔洞',photo:'U1K100.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:54,cat:1,name:'1k+167.5沖蝕孔',photo:'U1K167.5.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:55,cat:1,name:'1K+397坡面孔洞',photo:'U1K397.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:56,cat:1,name:'1k+420坡面孔洞35x18x60',photo:'U1K440.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:57,cat:1,name:'1K+450孔洞',photo:'U1K450.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:58,cat:1,name:'1k+470坡面孔洞',photo:'U1K470.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:59,cat:1,name:'1K+485坡面孔洞',photo:'U1K485.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:60,cat:1,name:'1K+510鼠洞',photo:'U1K510.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:61,cat:1,name:'1K+530坡面孔洞',photo:'U1K530.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:62,cat:1,name:'1K+542坡面孔洞',photo:'U1K542.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:63,cat:1,name:'1K+545鼠洞',photo:'U1K545.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:64,cat:1,name:'1K+560孔洞',photo:'U1K560.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:65,cat:1,name:'1k+564坡面孔洞*3',photo:'U1K564.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:66,cat:1,name:'1k+565截水溝混泥土破損',photo:'U1K565.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:67,cat:1,name:'1k+580坡面孔洞',photo:'U1K580.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:68,cat:1,name:'1k+6100坡面孔洞',photo:'U1K610.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:69,cat:1,name:'1k+630坡面孔洞22x30x45',photo:'U1K630.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  {id:70,cat:1,name:'1k+650坡面孔洞',photo:'U1K650.jpg',location:'大壩上游側',addedDate:'2025-04-01',lat:null,lng:null,remark:'',photo_taken:null},
+  // ── 2. 下游（待填入）──
+  // ── 3. 壩頂（待填入）──
+  // ── 4. 周邊（待填入）──
+  // ── 5. 附屬（待填入）──
+  // ── 6. 滲水（待填入）──
+  // ── 7. 越域排洪道（待填入）──
+];
+
+// 照片路徑：與 HTML 放在同一資料夾
+// 系統會自動嘗試 .jpg / .jpeg / .JPG / .JPEG / .png
+const photoCache = {};
+function getPhotoSrc(filename) {
+  if (!filename) return null;
+  if (/\.(jpe?g|png|gif|webp)$/i.test(filename)) return filename;
+  return filename; // basename，由 tryPhotoExtensions() 動態補副檔名
+}
+// ★ 照片資料夾名稱，每個月更換時只需修改這裡 ★
+const PHOTO_FOLDER = '4月EX/';
+
+function tryPhotoExtensions(img, basename, onFail) {
+  const exts = ['.jpg','.jpeg','.JPG','.JPEG','.png'];
+  const key = PHOTO_FOLDER + basename;
+  if (photoCache[key]) { img.src = key + photoCache[key]; return; }
+  let idx = 0;
+  function tryNext() {
+    if (idx >= exts.length) { if(onFail) onFail(); return; }
+    const attempt = PHOTO_FOLDER + basename + exts[idx];
+    const t = new Image();
+    t.onload = () => { photoCache[key]=exts[idx]; img.src=attempt; };
+    t.onerror = () => { idx++; tryNext(); };
+    t.src = attempt;
+  }
+  tryNext();
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let currentCat = null;
+let currentItems = [];
+let currentIndex = 0;
+let gpsWatchId = null;
+let userLat = null, userLng = null;
+let addBetween = { prev: null, next: null };
+let addGps = null;
+let addPhotoData = null;
+let newAnomalies = [];
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+document.getElementById('splashDate').textContent =
+  new Date().toLocaleDateString('zh-TW', {year:'numeric', month:'long', day:'numeric', weekday:'long'});
+
+function enterSystem() {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('catDate').textContent =
+    new Date().toLocaleDateString('zh-TW', {year:'numeric', month:'long', day:'numeric'});
+  buildCatList();
+  show('catPage');
+  startGPS();
+}
+
+function show(pageId) {
+  ['catPage','overviewPage','detailPage','addPage'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = (id === pageId) ? 'flex' : 'none';
+  });
+}
+
+// ─── CATEGORY LIST ────────────────────────────────────────────────────────
+function buildCatList() {
+  const list = document.getElementById('catList');
+  list.innerHTML = '';
+  Object.entries(CATEGORIES).forEach(([id, cat]) => {
+    const count = anomalies.filter(a => a.cat == id).length;
+    const newCount = newAnomalies.filter(a => a.cat == id).length;
+    const div = document.createElement('div');
+    div.className = 'cat-item';
+    div.innerHTML = `
+      <div class="cat-num">${id}</div>
+      <div class="cat-info">
+        <div class="cat-name">${cat.icon} ${cat.name}</div>
+        <div class="cat-count">${count} 個異狀${newCount > 0 ? ` · 本次新增 ${newCount}` : ''}</div>
+      </div>
+      <span class="cat-arrow">›</span>
+    `;
+    div.onclick = () => openCategory(parseInt(id));
+    list.appendChild(div);
+  });
+}
+
+function openCategory(catId) {
+  currentCat = catId;
+  currentItems = anomalies.filter(a => a.cat === catId);
+  currentIndex = 0;
+  showDetail(currentIndex);
+}
+
+// ─── OVERVIEW ─────────────────────────────────────────────────────────────
+function showOverview() {
+  const cat = CATEGORIES[currentCat];
+  document.getElementById('ovTitle').textContent = `${cat.icon} ${cat.name}`;
+  document.getElementById('ovCount').textContent = `${currentItems.length} 個`;
+  const grid = document.getElementById('ovGrid');
+  grid.innerHTML = '';
+  currentItems.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'ov-card' + (i === currentIndex ? ' active-card' : '');
+    card.innerHTML = `
+      <div class="ov-thumb" id="ovthumb-${i}"><span style="font-size:22px;color:var(--text3)">📷</span></div>
+      <div class="ov-card-num">#${i+1} ${item.name}</div>
+      <div class="ov-card-name">${item.location}</div>
+    `;
+    card.onclick = () => { currentIndex = i; showDetail(i); show('detailPage'); };
+    grid.appendChild(card);
+    // 非同步嘗試載入縮圖
+    if (item.photo) {
+      const base = item.photo.replace(/\.(jpe?g|png|gif|webp)$/i, '');
+      const tImg = new Image();
+      tImg.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      tryPhotoExtensions(tImg, base, null);
+      tImg.onload = () => {
+        const container = document.getElementById(`ovthumb-${i}`);
+        if (container) { container.innerHTML = ''; container.appendChild(tImg); }
+      };
+    }
+  });
+  show('overviewPage');
+}
+
+// ─── DETAIL ───────────────────────────────────────────────────────────────
+function showDetail(index) {
+  const item = currentItems[index];
+  const cat = CATEGORIES[currentCat];
+
+  document.getElementById('detCatBadge').textContent = `${cat.name}`;
+  document.getElementById('detProgress').textContent = `${index+1} / ${currentItems.length}`;
+  document.getElementById('anomalyName').textContent = item.name;
+  document.getElementById('anomalyPhoto').textContent = item.photo || '—';
+  document.getElementById('anomalyLoc').textContent = item.location || '—';
+  document.getElementById('anomalyDate').textContent = item.addedDate || '—';
+  document.getElementById('remarkArea').value = item.remark || '';
+
+  // Coordinates
+  if (item.lat && item.lng) {
+    document.getElementById('anomalyCoordRow').style.display = 'flex';
+    document.getElementById('anomalyCoord').textContent = `${item.lat.toFixed(5)}, ${item.lng.toFixed(5)}`;
+  } else {
+    document.getElementById('anomalyCoordRow').style.display = 'none';
+  }
+
+  // Photo — 自動嘗試 .jpg / .jpeg
+  const img = document.getElementById('prevPhotoImg');
+  const ph = document.getElementById('prevPhotoPlaceholder');
+  if (item.photo) {
+    // 移除舊副檔名取得 basename
+    const base = item.photo.replace(/\.(jpe?g|png|gif|webp)$/i, '');
+    img.style.display = 'block';
+    ph.style.display = 'none';
+    tryPhotoExtensions(img, base, () => {
+      img.style.display = 'none';
+      ph.style.display = 'block';
+      ph.textContent = '🖼️';
+    });
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'block';
+    ph.textContent = '📷';
+  }
+
+  // Capture state
+  const captureBtn = document.getElementById('captureBtn');
+  const thumb = document.getElementById('thumbPreview');
+  if (item.photo_taken) {
+    captureBtn.textContent = '✅ 已拍照';
+    captureBtn.className = 'btn-capture has-photo';
+    thumb.src = item.photo_taken;
+    thumb.style.display = 'block';
+  } else {
+    captureBtn.textContent = '📷 拍照記錄';
+    captureBtn.className = 'btn-capture';
+    thumb.style.display = 'none';
+  }
+
+  // Nav buttons
+  document.getElementById('btnPrev').disabled = index === 0;
+  document.getElementById('btnNext').textContent = index < currentItems.length - 1 ? '下一個 →' : '完成 ✓';
+
+  updateGPSDistance(item);
+  show('detailPage');
+}
+
+function navigate(dir) {
+  // Save remark
+  currentItems[currentIndex].remark = document.getElementById('remarkArea').value;
+  const newIndex = currentIndex + dir;
+  if (newIndex < 0 || newIndex >= currentItems.length) {
+    if (dir > 0) { showToast('已完成此區域所有異狀檢查 ✓'); show('catPage'); buildCatList(); }
+    return;
+  }
+  currentIndex = newIndex;
+  showDetail(currentIndex);
+}
+
+function goBack(from) {
+  if (from === 'detail') {
+    currentItems[currentIndex].remark = document.getElementById('remarkArea').value;
+    show('catPage'); buildCatList();
+  } else if (from === 'overview') {
+    show('detailPage');
+  }
+}
+
+// ─── PHOTO CAPTURE ────────────────────────────────────────────────────────
+function handleCapture(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const dataURL = ev.target.result;
+    currentItems[currentIndex].photo_taken = dataURL;
+    document.getElementById('captureBtn').textContent = '✅ 已拍照';
+    document.getElementById('captureBtn').className = 'btn-capture has-photo';
+    const thumb = document.getElementById('thumbPreview');
+    thumb.src = dataURL;
+    thumb.style.display = 'block';
+    showToast('照片已儲存');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+// ─── LIGHTBOX ─────────────────────────────────────────────────────────────
+function openLightbox() {
+  const item = currentItems[currentIndex];
+  const src = getPhotoSrc(item.photo);
+  if (!src) return;
+  const img = document.getElementById('prevPhotoImg');
+  if (img.style.display === 'none') return;
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lbCaption').textContent = item.photo;
+  document.getElementById('lightbox').style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+
+// ─── GPS ──────────────────────────────────────────────────────────────────
+function startGPS() {
+  if (!navigator.geolocation) {
+    document.getElementById('gpsText').textContent = '裝置不支援 GPS';
+    document.getElementById('gpsDot').className = 'gps-dot no-gps';
+    return;
+  }
+  const opts = { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 };
+  gpsWatchId = navigator.geolocation.watchPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      const acc = Math.round(pos.coords.accuracy);
+      document.getElementById('gpsDot').className = 'gps-dot';
+      document.getElementById('gpsText').textContent = `精度 ±${acc}m`;
+      if (currentItems.length > 0) updateGPSDistance(currentItems[currentIndex]);
+    },
+    err => {
+      document.getElementById('gpsDot').className = 'gps-dot no-gps';
+      document.getElementById('gpsText').textContent = '無法取得位置';
+    }, opts
+  );
+}
+
+function updateGPSDistance(item) {
+  if (!item.lat || !item.lng || userLat === null) {
+    document.getElementById('gpsDist').textContent = '';
+    document.getElementById('gpsDir').textContent = '';
+    return;
+  }
+  const dist = haversine(userLat, userLng, item.lat, item.lng);
+  const dir = bearing(userLat, userLng, item.lat, item.lng);
+  document.getElementById('gpsDist').textContent = dist < 1000 ? `${Math.round(dist)}m` : `${(dist/1000).toFixed(1)}km`;
+  document.getElementById('gpsDir').textContent = ` ${dir}`;
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function bearing(lat1, lng1, lat2, lng2) {
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const y = Math.sin(dLng)*Math.cos(lat2*Math.PI/180);
+  const x = Math.cos(lat1*Math.PI/180)*Math.sin(lat2*Math.PI/180) - Math.sin(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.cos(dLng);
+  const b = (Math.atan2(y, x)*180/Math.PI + 360) % 360;
+  const dirs = ['北↑','東北↗','東→','東南↘','南↓','西南↙','西←','西北↖'];
+  return dirs[Math.round(b/45) % 8];
+}
+
+// GPS 3-second refresh for GPS bar
+setInterval(() => {
+  if (currentItems.length > 0 && document.getElementById('detailPage').style.display !== 'none') {
+    updateGPSDistance(currentItems[currentIndex]);
+  }
+}, 3000);
+
+// ─── ADD ANOMALY ──────────────────────────────────────────────────────────
+function showAddPage() {
+  // Context: between current and next
+  const prevItem = currentItems[currentIndex];
+  const nextItem = currentItems[currentIndex + 1] || null;
+  addBetween = { prev: prevItem, next: nextItem };
+  addGps = null; addPhotoData = null;
+
+  document.getElementById('addCtx').innerHTML =
+    `位置：#${currentIndex+1} 之後<br>${prevItem.name}${nextItem ? ' → '+nextItem.name : ' (末尾)'}`;
+  document.getElementById('addCat').value = currentCat;
+  document.getElementById('addName').value = '';
+  document.getElementById('addLoc').value = '';
+  document.getElementById('addDesc').value = '';
+  document.getElementById('addGpsStatus').textContent = '尚未取得';
+  document.getElementById('addPhotoBtnLabel').textContent = '點擊拍照';
+  document.getElementById('addPhotoBtn').className = 'add-photo-btn';
+
+  show('addPage');
+}
+
+function cancelAdd() { show('detailPage'); }
+
+function captureAddGPS() {
+  if (!navigator.geolocation) { showToast('裝置不支援 GPS'); return; }
+  document.getElementById('addGpsStatus').textContent = '定位中…';
+  navigator.geolocation.getCurrentPosition(pos => {
+    addGps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    document.getElementById('addGpsStatus').textContent =
+      `${addGps.lat.toFixed(5)}, ${addGps.lng.toFixed(5)} (±${Math.round(pos.coords.accuracy)}m)`;
+  }, () => {
+    document.getElementById('addGpsStatus').textContent = '無法取得位置';
+  }, { enableHighAccuracy: true, timeout: 8000 });
+}
+
+function handleAddPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addPhotoData = ev.target.result;
+    document.getElementById('addPhotoBtnLabel').textContent = '✅ 已拍照，點擊重拍';
+    document.getElementById('addPhotoBtn').className = 'add-photo-btn has-photo';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function saveAdd() {
+  const name = document.getElementById('addName').value.trim();
+  if (!name) { showToast('請輸入異狀名稱'); return; }
+  const newA = {
+    id: Date.now(), cat: parseInt(document.getElementById('addCat').value),
+    name, location: document.getElementById('addLoc').value.trim(),
+    addedDate: new Date().toISOString().slice(0,10),
+    lat: addGps ? addGps.lat : null, lng: addGps ? addGps.lng : null,
+    remark: document.getElementById('addDesc').value.trim(),
+    photo_taken: addPhotoData, photo: null,
+    isNew: true, insertedAfter: addBetween.prev ? addBetween.prev.id : null
+  };
+  newAnomalies.push(newA);
+  // Insert into currentItems
+  currentItems.splice(currentIndex + 1, 0, newA);
+  showToast('新異狀已儲存 ✓');
+  show('detailPage');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
