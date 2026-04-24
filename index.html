@@ -781,9 +781,21 @@ function enterSystem() {
   document.getElementById('catDate').textContent =
     new Date().toLocaleDateString('zh-TW', {year:'numeric', month:'long', day:'numeric'});
   buildCatList();
-  show('catPage');
   startGPS();
+  // 如果是從捷徑跳回來，直接恢復位置；否則顯示分類頁
+  if (sessionStorage.getItem('returnCat')) {
+    restorePosition();
+  } else {
+    show('catPage');
+  }
 }
+
+// 自動偵測是否從捷徑跳回（有 sessionStorage 就直接進系統跳過 splash）
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('returnCat')) {
+    enterSystem();
+  }
+});
 
 function show(pageId) {
   ['catPage','overviewPage','detailPage','addPage'].forEach(id => {
@@ -963,11 +975,28 @@ function launchShortcut() {
   document.getElementById('captureBtn').className = 'btn-capture has-photo';
   document.getElementById('thumbPreview').style.display = 'none';
 
-  // 跳到捷徑 App，帶入檔名作為參數
-  // 捷徑 URL scheme: shortcuts://run-shortcut?name=拍照改名&input=檔名
+  // 儲存目前位置到 URL hash，跳回來時可以恢復
+  // 把目前位置存到 sessionStorage，跳回來時恢復
+  sessionStorage.setItem('returnCat', currentCat);
+  sessionStorage.setItem('returnIdx', currentIndex);
+
   const shortcutName = encodeURIComponent('拍照改名');
   const input = encodeURIComponent(basename);
   window.location.href = `shortcuts://run-shortcut?name=${shortcutName}&input=${input}`;
+}
+
+// 頁面載入時檢查 URL hash，恢復上次位置
+function restorePosition() {
+  const cat = parseInt(sessionStorage.getItem('returnCat'));
+  const idx = parseInt(sessionStorage.getItem('returnIdx'));
+  if (!cat || isNaN(idx)) return;
+  sessionStorage.removeItem('returnCat');
+  sessionStorage.removeItem('returnIdx');
+  currentCat = cat;
+  currentItems = anomalies.filter(a => a.cat === cat);
+  currentIndex = idx;
+  showDetail(idx);
+  show('detailPage');
 }
 
 // ─── LIGHTBOX ─────────────────────────────────────────────────────────────
